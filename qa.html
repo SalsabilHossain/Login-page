@@ -1,0 +1,186 @@
+<html>
+    <head>
+    <title>Login and registration form design</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body onload="getQuestions()">
+     <div >
+     <div >
+        
+    
+      <table class="table table-striped" id="questions-list"><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+      <div class="a">
+      <a class="btn btn-success" href="#popup1" onclick=submit()>Submit</a>
+    </div>
+
+
+    <div id="popup1" class="overlay">
+        <div class="popup">
+          <h2>Result</h2>
+          <a class="close" href="#">&times;</a>
+          <div id="report" class="content">
+            
+          </div>
+        </div>
+      </div>
+       
+
+
+     </div>
+     </div>
+     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+     <script>
+function getAllUrlParams(url) {
+  var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
+  var obj = {};
+
+  if (queryString) {
+    queryString = queryString.split('#')[0];
+    var arr = queryString.split('&');
+
+    for (var i = 0; i < arr.length; i++) {
+      var a = arr[i].split('=');
+      var paramName = a[0];
+      var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
+
+      paramName = paramName.toLowerCase();
+      if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
+
+      if (paramName.match(/\[(\d+)?\]$/)) {
+        var key = paramName.replace(/\[(\d+)?\]/, '');
+        if (!obj[key]) obj[key] = [];
+
+        if (paramName.match(/\[\d+\]$/)) {
+          var index = /\[(\d+)\]/.exec(paramName)[1];
+          obj[key][index] = paramValue;
+        } else {
+          obj[key].push(paramValue);
+        }
+      } else {
+        if (!obj[paramName]) {
+          obj[paramName] = paramValue;
+        } else if (obj[paramName] && typeof obj[paramName] === 'string'){
+          obj[paramName] = [obj[paramName]];
+          obj[paramName].push(paramValue);
+        } else {
+          obj[paramName].push(paramValue);
+        }
+      }
+    }
+  }
+
+  return obj;
+}
+
+
+
+        function getQuestions(){
+            id=getAllUrlParams().set_id
+            
+            const questions_url="http://127.0.0.1:5000/questions"
+            axios({
+            method:'get',
+            url:questions_url,
+            params:{
+                set_id:id
+            }
+        }).then(function(response){window.questions=response.data.result;list_questions(response.data.result,localStorage.getItem(id))})
+        
+
+        }
+        function list_questions(questions,scale_name){
+            let url="http://127.0.0.1:5000/answers"
+            var tr=document.createElement("tr")
+            var th=document.createElement("th")
+            th.scope="col"
+            th.innerHTML=scale_name
+            tr.appendChild(th)
+           
+            axios({
+                method:'get',
+                url:url,
+                params:{
+                    set_id:questions[0].question_set_id
+                }
+
+            }).then(function(response){
+                for (var i=0;i<response.data.result.length;i++){
+                    var th=document.createElement("th")
+                    th.innerHTML=response.data.result[i].answer
+                    tr.appendChild(th)
+                    
+                }
+                document.getElementById("thead").appendChild(tr)
+                for (var i=0;i<questions.length;i++){
+                let tr=document.createElement("tr")
+                var td=document.createElement("td")
+                td.innerHTML=questions[i].question
+                tr.appendChild(td)
+                for (var j=0;j<response.data.result.length;j++){
+                    var radio=document.createElement("input")
+                    var radio_div=document.createElement("div")
+                    radio_div.className="radio_div"
+                    radio.type="radio"
+                    radio.name=questions[i].question
+                    radio.value=response.data.result[j].answer_id
+                    var td=document.createElement("td")
+                    radio_div.appendChild(radio)
+                    td.appendChild(radio_div)
+                    tr.appendChild(td)
+                }
+
+            document.getElementById("tbody").appendChild(tr)
+                 
+            }
+            })
+            // .then(function(response){
+                    
+            // })
+        }
+        
+        async function submit(){
+            var answers=[]
+            const submit_url="http://127.0.0.1:5000/submit-report"
+            for(var i=0;i<window.questions.length;i++){
+               answers.push(
+                   {
+                    question_id:window.questions[i].question_id,
+                    answer_id:document.querySelector('input[name="'+window.questions[i].question+'"]:checked').value
+                   }
+               )
+            // console.log(document.querySelector('input[name="'+window.questions[i].question+'"]:checked').value);
+        }
+        data = await axios({
+                    method:'post',
+                    url:submit_url,
+                    data:{
+                        user_id:localStorage.getItem("id"),
+                        question_set_id:getAllUrlParams().set_id,
+                        answers:answers                
+                    }
+                }).then(function(response){
+
+                  console.log(response)
+                  document.getElementById("report").innerHTML=""
+                  var assesment=document.createElement("p").innerHTML="Your assesememt is: "+response.data.assesment+"."
+                  if(response.data.isAppointmentNeeded==1){
+                    var appointment=document.createElement("p").innerHTML="You need an appointment"
+                  }
+                  else{
+                    var appointment=document.createElement("p").innerHTML="You do not need an appointment"
+                  }
+                  document.getElementById("report").append(assesment)
+                  document.getElementById("report").append(appointment)
+                  }).catch(function(error){
+                console.log(error)
+            })
+        return data
+        }
+
+        
+
+     
+     </script>
+</body>
+</html>

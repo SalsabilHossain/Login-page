@@ -1,24 +1,25 @@
     <html>
     <head>
-    <title>Login and registration form design</title>
+    <title>Login and registration</title>
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
+        <div class="page">
      <div class="login-page">
      <div class="form">
         <form class="register-form">
-        <input type="text" placeholder="Username"/>
-        <input type="text" placeholder="Password"/>
-        <input type="text" placeholder="Email"/>
-        <button>Create</button>
+        <input type="text" id="reg_uname" placeholder="Username"/>
+        <input type="text" id="reg_mail" placeholder="Email"/>
+        <input type="text" id="reg_pword" placeholder="Password"/>
+        <button id="create"type="button">Create</button>
         <p class="message">Already a member? <a href="#">Login</a>
         </p>
         
         </form>
         <form class="login-form">
-                <input type="text" placeholder="Username"/>
-                <input type="text" placeholder="Password"/>
-            <button>Login</button>
+                <input type="text" id="email" placeholder="email"/>
+                <input type="text" id="password" placeholder="Password"/>
+            <button id="login" type="button">Login</button>
             <p class="message">Not registered?<a href="#"> Register</a>
             </p>
 
@@ -30,6 +31,7 @@
 
      </div>
      </div>
+    </div>
 
 
      <script src='https://code.jquery.com/jquery-3.4.1.min.js'></script>
@@ -38,6 +40,66 @@
         $('.message a').click(function(){
         $('form').animate({height:"toggle", opacity:"toggle"}, "slow");    
         });
+     </script>
+     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+     <script>
+        
+        const login_url ="http://127.0.0.1:5000/login"
+        const register_url="http://127.0.0.1:5000/register"
+        document.getElementById("login").onclick = function(){
+            var mail=document.getElementById("email").value
+            var pword=document.getElementById("password").value
+           
+            axios({
+                method:'post',
+                url:login_url,
+                data:{
+                    email:mail,
+                password:pword
+                }
+            })
+            .then(function(response){
+                localStorage.setItem("token",response.data.result[0].token)
+                localStorage.setItem("id",response.data.result[0].user_id)
+
+                if(response.status==200){
+                    window.location.href="/questions-list.html"
+                }
+            })
+            .catch(function(error){
+                console.log(error)
+            })
+        }
+        document.getElementById("create").onclick=function(){
+            var mail=document.getElementById("reg_mail").value
+            var uname=document.getElementById("reg_uname").value
+            var pword=document.getElementById("reg_pword").value
+
+            // console.log({
+                    
+            //                     name:uname,
+            //                     email:mail,
+            //                     password:pword
+                            
+            //             })
+            axios({
+                method:"post",
+                url:register_url,
+                data:{
+                    
+                        name:uname,
+                        email:mail,
+                        password:pword
+                    
+                }
+            })
+            .then(function(response){
+                console.log(response)
+            })
+            .catch(function(error){
+                console.log(error)
+            })
+        }
      </script>
     </body>
     </html>

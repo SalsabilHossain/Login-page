@@ -1,0 +1,72 @@
+<html>
+    <head>
+    <title>Login and registration form design</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    </head>
+    <body onload="createList()">
+     <div >
+     <div >
+        <form>
+      <table class="table" id="set-list"></table>
+    </form>
+      
+        
+       
+
+
+     </div>
+     </div>
+     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+     <script>
+        const question_set_url="http://127.0.0.1:5000/question-sets"
+        let list=document.getElementById("set-list")
+        function createList(){
+        axios({
+            method:'get',
+            url:question_set_url
+        }).then(function(response){createButtons(response.data.result.length,response.data.result)})
+
+
+        
+        }
+        function createButtons(n,names){
+        
+        for (i=0;i<n;i++){
+             var tr=document.createElement("tr")
+             var th=document.createElement("th")
+             th.scope="col"
+             var bt=document.createElement("button")
+             bt.className="btn btn-link"
+             bt.innerHTML=names[i].name
+            //  console.log(names[i].id)
+             bt.value=names[i].id
+             localStorage.setItem(names[i].id,names[i].name)
+             bt.type="button"
+             bt.onclick=clickButton
+             th.appendChild(bt)
+             tr.appendChild(th)
+            list.appendChild(tr)
+         }
+        }
+
+        function clickButton(id){
+            const url="/qa.html"+"?set_id="+id.srcElement.value
+            window.location.href=url
+            // console.log(id)
+        }
+           
+     
+     </script>
+     <style>
+     .form{
+    position: relative;
+    z-index: 1;
+    background:hsla(0, 100%, 90%, 0.3);
+    max-width: 360px;
+    margin: 0 auto 100px;
+    padding: 45px;
+    text-align: center;
+    border-radius: 30px;
+}</style>
+</body>
+</html>
